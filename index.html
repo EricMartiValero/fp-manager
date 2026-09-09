@@ -3,7 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>FP Manager - Gestión de Prácticas</title>
+<title>ElektraNails FP Manager - Gestión de Prácticas</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4F46E5">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FP Manager">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -28,7 +36,7 @@ input,select,textarea{font-family:inherit;font-size:inherit}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
-#setup-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:linear-gradient(135deg,#4F46E5 0%,#7C3AED 100%)}
+#setup-screen{display:none;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:linear-gradient(135deg,#4F46E5 0%,#7C3AED 100%)}
 .setup-card{background:var(--card);border-radius:20px;padding:40px;max-width:560px;width:100%;box-shadow:var(--shadow-lg)}
 .setup-card h1{font-size:1.6rem;margin-bottom:4px}
 .setup-card .subtitle{color:var(--text2);margin-bottom:24px;font-size:.9rem}
@@ -188,11 +196,34 @@ tr:hover td{background:var(--primary-light)}
 .login-card h1{font-size:1.5rem;margin-bottom:4px}
 .login-card .subtitle{color:var(--text2);font-size:.85rem;margin-bottom:24px}
 .login-card .form-group{text-align:left}
+.remember-row{display:flex;align-items:center;gap:8px;margin:4px 0 8px;font-size:.82rem;color:var(--text2);cursor:pointer;user-select:none;text-align:left}
+.remember-row input{width:16px;height:16px;accent-color:var(--primary);cursor:pointer}
 .login-card .btn{margin-top:8px}
 .logout-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:8px;margin-top:10px;border:none;border-radius:8px;background:rgba(239,68,68,.15);color:#FCA5A5;font-size:.8rem;font-weight:600;cursor:pointer;transition:background .2s}
 .logout-btn:hover{background:rgba(239,68,68,.3);color:#FECACA}
 
 .recent-list{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.cal-layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+.cal-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-dow{text-align:center;font-size:.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;padding:6px 0}
+.cal-day{min-height:62px;border:1.5px solid var(--border);border-radius:8px;padding:5px 7px;cursor:pointer;transition:all .15s;position:relative;background:var(--card)}
+.cal-day:hover{border-color:var(--primary);background:var(--primary-light)}
+.cal-day.today{background:var(--primary-light);border-color:var(--primary)}
+.cal-day.selected{border-color:var(--primary);box-shadow:0 0 0 2px var(--primary-light)}
+.cal-day .num{font-size:.8rem;font-weight:600}
+.cal-day .count{position:absolute;top:5px;right:7px;background:var(--primary);color:#fff;border-radius:10px;font-size:.62rem;font-weight:700;padding:1px 6px;min-width:16px;text-align:center}
+.cal-day .iv-dots{display:flex;gap:3px;margin-top:8px;flex-wrap:wrap}
+.cal-day .dot{width:6px;height:6px;border-radius:50%;background:var(--success)}
+.cal-side .cal-card h3{font-size:.95rem;text-transform:capitalize;margin-bottom:10px}
+.iv-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;margin-bottom:8px;background:var(--card)}
+.iv-item .iv-time{font-size:.75rem;color:var(--text2);white-space:nowrap}
+.iv-item .iv-name{font-size:.85rem;font-weight:600}
+.iv-item .iv-centro{font-size:.75rem;color:var(--text2)}
+@media(max-width:900px){
+  .cal-layout{grid-template-columns:1fr}
+  .cal-day{min-height:52px}
+}
 .recent-item{display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--border)}
 .recent-item:last-child{border-bottom:none}
 .recent-item .ri-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
@@ -208,8 +239,8 @@ tr:hover td{background:var(--primary-light)}
 <!-- ========== LOGIN SCREEN ========== -->
 <div id="login-screen">
   <div class="login-card">
-    <div class="logo">🎓</div>
-    <h1>FP Manager</h1>
+    <div class="logo">💅</div>
+    <h1>ElektraNails FP Manager</h1>
     <p class="subtitle">Acceso privado · Elektra</p>
     <div class="form-group">
       <label class="form-label">Usuario</label>
@@ -219,6 +250,10 @@ tr:hover td{background:var(--primary-light)}
       <label class="form-label">Contraseña</label>
       <input type="password" id="login-pass" class="form-input" placeholder="••••••••" autocomplete="current-password">
     </div>
+    <label class="remember-row">
+      <input type="checkbox" id="login-remember" checked>
+      <span>Recuérdame en este dispositivo</span>
+    </label>
     <p class="error-msg" id="login-error" style="display:none;text-align:center"></p>
     <button class="btn btn-primary btn-full" onclick="doLogin()">Entrar</button>
   </div>
@@ -227,7 +262,7 @@ tr:hover td{background:var(--primary-light)}
 <!-- ========== SETUP SCREEN ========== -->
 <div id="setup-screen">
   <div class="setup-card">
-    <h1>FP Manager</h1>
+    <h1>ElektraNails FP Manager</h1>
     <p class="subtitle">Gestión de centros FP y candidatas a prácticas</p>
 
     <div class="step">
@@ -269,7 +304,7 @@ tr:hover td{background:var(--primary-light)}
 
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
-      <h2><span>🎓</span> FP Manager</h2>
+      <h2><span>💅</span> ElektraNails FP</h2>
     </div>
     <nav class="sidebar-nav">
       <div class="nav-item active" data-view="dashboard" onclick="switchView('dashboard')">
@@ -277,6 +312,9 @@ tr:hover td{background:var(--primary-light)}
       </div>
       <div class="nav-item" data-view="centros" onclick="switchView('centros')">
         <span class="icon">🏫</span> Centros FP
+      </div>
+      <div class="nav-item" data-view="calendario" onclick="switchView('calendario')">
+        <span class="icon">📅</span> Calendario
       </div>
       <div class="nav-item" data-view="chicas" onclick="switchView('chicas')">
         <span class="icon">👩</span> Chicas
@@ -286,7 +324,7 @@ tr:hover td{background:var(--primary-light)}
       </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="version">FP Manager v1.1</div>
+      <div class="version">ElektraNails FP Manager v1.2</div>
       <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
     </div>
   </aside>
@@ -354,6 +392,25 @@ tr:hover td{background:var(--primary-light)}
               <tbody id="tbody-centros"></tbody>
             </table>
           </div>
+        </div>
+      </div>
+
+      <!-- CALENDARIO VIEW -->
+      <div class="view" id="view-calendario">
+        <div class="section-header">
+          <h2>Calendario de entrevistas</h2>
+          <div class="filters" style="align-items:center">
+            <button class="btn btn-ghost btn-sm" onclick="calMove(-1)">←</button>
+            <h3 id="cal-month-label" style="min-width:150px;text-align:center;text-transform:capitalize;font-size:.95rem"></h3>
+            <button class="btn btn-ghost btn-sm" onclick="calMove(1)">→</button>
+            <button class="btn btn-primary btn-sm" onclick="calToday()">Hoy</button>
+          </div>
+        </div>
+        <div class="cal-layout">
+          <div class="cal-card">
+            <div class="cal-grid" id="cal-grid"></div>
+          </div>
+          <div class="cal-side" id="cal-side"></div>
         </div>
       </div>
 
@@ -446,6 +503,9 @@ tr:hover td{background:var(--primary-light)}
     <button class="btm-nav-item" data-view="centros" onclick="switchView('centros')">
       <span class="icon">🏫</span> Centros
     </button>
+    <button class="btm-nav-item" data-view="calendario" onclick="switchView('calendario')">
+      <span class="icon">📅</span> Calendario
+    </button>
     <button class="btm-nav-item" data-view="chicas" onclick="switchView('chicas')">
       <span class="icon">👩</span> Chicas
     </button>
@@ -491,10 +551,15 @@ const S = {
 // CONFIG
 // ============================================
 const CFG_KEY = 'fp_manager_config';
+const DEFAULT_URL = 'https://nnqliftwzgnmjrbhggjm.supabase.co';
+const DEFAULT_KEY = 'sb_publishable_tALB8sWNYUmI4PzVN9V9Iw_ylL-Ncsa';
 
 function getConfig() {
-  try { return JSON.parse(localStorage.getItem(CFG_KEY)); }
-  catch { return null; }
+  try {
+    const c = JSON.parse(localStorage.getItem(CFG_KEY));
+    if (c && c.url && c.key) return c;
+  } catch {}
+  return { url: DEFAULT_URL, key: DEFAULT_KEY };
 }
 
 function saveConfig(url, key) {
@@ -638,7 +703,7 @@ function switchView(view) {
   document.querySelectorAll('.btm-nav-item').forEach(n => {
     n.classList.toggle('active', n.dataset.view === view);
   });
-  const titles = { dashboard: 'Dashboard', centros: 'Centros FP', chicas: 'Chicas', config: 'Configuración' };
+  const titles = { dashboard: 'Dashboard', centros: 'Centros FP', calendario: 'Calendario', chicas: 'Chicas', config: 'Configuración' };
   document.getElementById('header-title').textContent = titles[view] || view;
 
   // Header actions per view
@@ -658,6 +723,7 @@ function switchView(view) {
 function renderCurrentView() {
   if (S.view === 'dashboard') renderDashboard();
   else if (S.view === 'centros') renderCentros();
+  else if (S.view === 'calendario') renderCalendario();
   else if (S.view === 'chicas') renderChicas();
   else if (S.view === 'config') renderConfig();
 }
@@ -938,7 +1004,7 @@ function openCentroModal(id) {
   };
 }
 
-function openChicaModal(id) {
+function openChicaModal(id, prefillDate) {
   const g = id ? S.chicas.find(x => x.id === id) : null;
   openModal(g ? 'Editar Chica' : 'Nueva Chica');
 
@@ -948,7 +1014,7 @@ function openChicaModal(id) {
   const estadoOpts = ['Pendiente','CV enviado','Entrevista programada','Entrevista realizada','Aceptada','Descartada'].map(e =>
     `<option value="${e}" ${g?.estado === e ? 'selected' : ''}>${e}</option>`
   ).join('');
-  const fechaVal = g?.fecha_entrevista ? new Date(g.fecha_entrevista).toISOString().slice(0, 16) : '';
+  const fechaVal = (g?.fecha_entrevista ? new Date(g.fecha_entrevista).toISOString().slice(0, 16) : (prefillDate || ''));
 
   document.getElementById('modal-body').innerHTML = `
     <div class="form-group">
@@ -1159,7 +1225,7 @@ const AUTH_PASS = 'Putada21';
 const SESSION_KEY = 'fp_manager_session';
 
 function isLoggedIn() {
-  return localStorage.getItem(SESSION_KEY) === '1';
+  return localStorage.getItem(SESSION_KEY) === '1' || sessionStorage.getItem(SESSION_KEY) === '1';
 }
 
 function doLogin() {
@@ -1167,8 +1233,16 @@ function doLogin() {
   const p = document.getElementById('login-pass').value;
   const err = document.getElementById('login-error');
   if (u === AUTH_USER && p === AUTH_PASS) {
-    localStorage.setItem(SESSION_KEY, '1');
+    const remember = document.getElementById('login-remember').checked;
+    if (remember) {
+      localStorage.setItem(SESSION_KEY, '1');
+      sessionStorage.removeItem(SESSION_KEY);
+    } else {
+      sessionStorage.setItem(SESSION_KEY, '1');
+      localStorage.removeItem(SESSION_KEY);
+    }
     document.getElementById('login-screen').style.display = 'none';
+    requestNotifPermission();
     init();
   } else {
     err.textContent = 'Usuario o contraseña incorrectos';
@@ -1180,6 +1254,7 @@ function doLogin() {
 
 function logout() {
   localStorage.removeItem(SESSION_KEY);
+  sessionStorage.removeItem(SESSION_KEY);
   location.reload();
 }
 
@@ -1195,16 +1270,17 @@ document.getElementById('login-user').addEventListener('keydown', e => {
 // ============================================
 async function init() {
   const cfg = getConfig();
-  if (cfg) {
-    document.getElementById('cfg-url').value = cfg.url;
-    document.getElementById('cfg-key').value = cfg.key;
-    try {
-      await connect(cfg.url, cfg.key);
-      await loadData();
-      showApp();
-    } catch {
-      clearConfig();
-    }
+  document.getElementById('cfg-url').value = cfg.url;
+  document.getElementById('cfg-key').value = cfg.key;
+  try {
+    await connect(cfg.url, cfg.key);
+    await loadData();
+    showApp();
+    startInterviewChecks();
+  } catch (e) {
+    document.getElementById('setup-error').textContent = 'No se pudo conectar con la base de datos: ' + (e.message || 'error');
+    document.getElementById('setup-error').style.display = 'block';
+    document.getElementById('setup-screen').style.display = 'flex';
   }
 }
 
@@ -1214,6 +1290,185 @@ window.addEventListener('DOMContentLoaded', () => {
     init();
   }
 });
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
+// ============================================
+// CALENDARIO DE ENTREVISTAS
+// ============================================
+let calMonth = new Date();
+let calSelected = null;
+let notifiedInterviews = {};
+
+function pad2(n) { return String(n).padStart(2, '0'); }
+function toDateKey(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+function fromKey(key) { const p = key.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+
+function buildInterviewMap() {
+  const map = {};
+  S.chicas.forEach(g => {
+    if (!g.fecha_entrevista) return;
+    const key = toDateKey(new Date(g.fecha_entrevista));
+    if (!map[key]) map[key] = [];
+    map[key].push(g);
+  });
+  return map;
+}
+
+function calMove(dir) {
+  calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + dir, 1);
+  renderCalendario();
+}
+function calToday() {
+  calMonth = new Date();
+  calSelected = toDateKey(new Date());
+  renderCalendario();
+}
+function selectDay(key) {
+  calSelected = (calSelected === key) ? null : key;
+  renderCalendario();
+}
+
+function renderCalendario() {
+  const y = calMonth.getFullYear(), m = calMonth.getMonth();
+  const label = calMonth.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+  document.getElementById('cal-month-label').textContent = label;
+  const map = buildInterviewMap();
+  const startDow = new Date(y, m, 1).getDay();
+  const dim = new Date(y, m + 1, 0).getDate();
+  const todayKey = toDateKey(new Date());
+  let html = '';
+  ['L', 'M', 'X', 'J', 'V', 'S', 'D'].forEach(d => { html += `<div class="cal-dow">${d}</div>`; });
+  for (let i = 0; i < startDow; i++) html += '<div style="min-height:62px"></div>';
+  for (let d = 1; d <= dim; d++) {
+    const key = y + '-' + pad2(m + 1) + '-' + pad2(d);
+    const ivs = map[key] || [];
+    const cls = ['cal-day'];
+    if (key === todayKey) cls.push('today');
+    if (key === calSelected) cls.push('selected');
+    html += `<div class="${cls.join(' ')}" onclick="selectDay('${key}')">
+      <span class="num">${d}</span>
+      ${ivs.length ? `<span class="count">${ivs.length}</span>` : ''}
+      ${ivs.length ? `<span class="iv-dots">${ivs.slice(0, 3).map(() => '<span class="dot"></span>').join('')}</span>` : ''}
+    </div>`;
+  }
+  document.getElementById('cal-grid').innerHTML = html;
+  renderCalSide();
+}
+
+function renderCalSide() {
+  const side = document.getElementById('cal-side');
+  if (!calSelected) {
+    side.innerHTML = `<div class="cal-card">
+      <h3>Selecciona un día</h3>
+      <p style="font-size:.82rem;color:var(--text2)">Haz clic en un día del calendario para ver las entrevistas o añadir una nueva.</p>
+    </div>`;
+    return;
+  }
+  const map = buildInterviewMap();
+  const ivs = map[calSelected] || [];
+  const label = fromKey(calSelected).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+  let list;
+  if (ivs.length) {
+    list = ivs.map(g => {
+      const t = new Date(g.fecha_entrevista).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+      return `<div class="iv-item">
+        <div><div class="iv-time">${esc(t)}</div></div>
+        <div style="flex:1"><div class="iv-name">${esc(g.nombre)}</div><div class="iv-centro">${esc(centroName(g.centro_id))}</div></div>
+        <span class="badge ${getEstadoBadgeClass(g.estado)}">${esc(g.estado)}</span>
+      </div>`;
+    }).join('');
+  } else {
+    list = '<p style="font-size:.85rem;color:var(--text2)">No hay entrevistas este día.</p>';
+  }
+  side.innerHTML = `<div class="cal-card">
+    <h3>${esc(label)}</h3>
+    ${list}
+    <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm" onclick="openEntrevistaModal()">Programar entrevista</button>
+      <button class="btn btn-ghost btn-sm" onclick="openChicaModal('', '${calSelected}T10:00')">Nueva chica</button>
+    </div>
+  </div>`;
+}
+
+function openEntrevistaModal() {
+  openModal('Programar entrevista');
+  const opts = S.chicas.map(g => `<option value="${g.id}">${esc(g.nombre)}</option>`).join('');
+  const dval = calSelected ? calSelected + 'T10:00' : '';
+  document.getElementById('modal-body').innerHTML = `
+    <div class="form-group">
+      <label class="form-label">Candidata</label>
+      <select id="f-iv-chica" class="form-input">
+        <option value="">-- Seleccionar --</option>
+        ${opts}
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Fecha y hora</label>
+      <input type="datetime-local" id="f-iv-fecha" class="form-input" value="${dval}">
+    </div>
+  `;
+  document.getElementById('modal-save').onclick = async () => {
+    const cid = document.getElementById('f-iv-chica').value;
+    const fv = document.getElementById('f-iv-fecha').value;
+    if (!cid || !fv) { showToast('Selecciona candidata y fecha', 'error'); return; }
+    try {
+      await dbUpdateChica(cid, { fecha_entrevista: new Date(fv).toISOString(), estado: 'Entrevista programada' });
+      showToast('Entrevista programada', 'success');
+      closeModal();
+      calSelected = toDateKey(new Date(fv));
+      renderCurrentView();
+    } catch (e) { showToast('Error: ' + e.message, 'error'); }
+  };
+}
+
+// ============================================
+// AVISOS DE ENTREVISTA (30 min antes)
+// ============================================
+function requestNotifPermission() {
+  try {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().catch(() => {});
+    }
+  } catch {}
+}
+
+function startInterviewChecks() {
+  requestNotifPermission();
+  checkInterviews();
+}
+
+function checkInterviews() {
+  try {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    if (!S.sb || !isLoggedIn()) return;
+    const now = Date.now();
+    const windowMs = 30 * 60 * 1000;
+    S.chicas.forEach(g => {
+      if (!g.fecha_entrevista) return;
+      const t = new Date(g.fecha_entrevista).getTime();
+      const diff = t - now;
+      if (diff > 0 && diff <= windowMs && !notifiedInterviews[g.id]) {
+        notifiedInterviews[g.id] = true;
+        const when = new Date(g.fecha_entrevista).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+        const centro = centroName(g.centro_id);
+        try {
+          const n = new Notification('📅 Entrevista en menos de 30 min', {
+            body: `${g.nombre} · a las ${when}${centro !== '-' ? ' · ' + centro : ''}`,
+            tag: 'iv-' + g.id
+          });
+          setTimeout(() => n.close(), 15000);
+        } catch {}
+        showToast(`Entrevista con ${g.nombre} en menos de 30 min (a las ${when})`, 'info');
+      }
+    });
+  } catch {}
+}
+setInterval(checkInterviews, 30000);
 </script>
 </body>
 </html>
