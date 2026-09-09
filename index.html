@@ -36,15 +36,6 @@ input,select,textarea{font-family:inherit;font-size:inherit}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
-#setup-screen{display:none;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:linear-gradient(135deg,#4F46E5 0%,#7C3AED 100%)}
-.setup-card{background:var(--card);border-radius:20px;padding:40px;max-width:560px;width:100%;box-shadow:var(--shadow-lg)}
-.setup-card h1{font-size:1.6rem;margin-bottom:4px}
-.setup-card .subtitle{color:var(--text2);margin-bottom:24px;font-size:.9rem}
-.setup-card .step{background:var(--bg);border-radius:var(--radius-sm);padding:16px;margin-bottom:12px}
-.setup-card .step h3{font-size:.85rem;color:var(--primary);margin-bottom:6px;display:flex;align-items:center;gap:8px}
-.setup-card .step p{font-size:.82rem;color:var(--text2);line-height:1.5}
-.setup-card .step code{background:var(--card);border:1px solid var(--border);padding:2px 6px;border-radius:4px;font-size:.78rem;user-select:all;word-break:break-all}
-.setup-card .step pre{background:var(--sidebar);color:#E2E8F0;padding:10px 12px;border-radius:6px;margin-top:8px;font-size:.75rem;overflow-x:auto;white-space:pre-wrap;user-select:all}
 .form-label{display:block;font-size:.82rem;font-weight:600;margin-bottom:6px;color:var(--text)}
 .form-input{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.9rem;transition:border .2s,box-shadow .2s;background:var(--card)}
 .form-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
@@ -259,45 +250,6 @@ tr:hover td{background:var(--primary-light)}
   </div>
 </div>
 
-<!-- ========== SETUP SCREEN ========== -->
-<div id="setup-screen">
-  <div class="setup-card">
-    <h1>ElektraNails FP Manager</h1>
-    <p class="subtitle">Gestión de centros FP y candidatas a prácticas</p>
-
-    <div class="step">
-      <h3>1. Crear proyecto Supabase (gratis)</h3>
-      <p>Ve a <a href="https://supabase.com" target="_blank">supabase.com</a>, crea una cuenta gratis y pulsa <strong>"New project"</strong>. Anota la contraseña de la base de datos.</p>
-    </div>
-
-    <div class="step">
-      <h3>2. Ejecutar el SQL de setup</h3>
-      <p>En tu proyecto Supabase, ve a <strong>SQL Editor</strong> (icono de base de datos en el menú izquierdo). Abre el archivo <code>setup.sql</code> que viene con esta app y pégalo todo. Pulsa <strong>"Run"</strong>.</p>
-      <p style="margin-top:6px">Esto creará las tablas y cargará los 11 centros FP.</p>
-    </div>
-
-    <div class="step">
-      <h3>3. Copiar URL y anon key</h3>
-      <p>Ve a <strong>Settings → API</strong> en tu proyecto Supabase. Copia la <strong>Project URL</strong> y la <strong>anon/public key</strong>.</p>
-    </div>
-
-    <div style="margin-top:24px">
-      <div class="form-group">
-        <label class="form-label">Project URL</label>
-        <input type="url" id="cfg-url" class="form-input" placeholder="https://xxxx.supabase.co">
-      </div>
-      <div class="form-group">
-        <label class="form-label">anon / public key</label>
-        <input type="text" id="cfg-key" class="form-input" placeholder="eyJhbGci...">
-      </div>
-      <p class="error-msg" id="setup-error"></p>
-      <p class="success-msg" id="setup-success"></p>
-      <button class="btn btn-primary btn-full" id="btn-connect" onclick="handleConnect()">Conectar</button>
-      <p style="text-align:center;margin-top:12px;font-size:.78rem;color:var(--text3)">Tus datos se guardan localmente en este navegador. No se comparten.</p>
-    </div>
-  </div>
-</div>
-
 <!-- ========== MAIN APP ========== -->
 <div id="app">
   <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="closeSidebar()"></div>
@@ -483,8 +435,7 @@ tr:hover td{background:var(--primary-light)}
             <input type="text" id="cfg-edit-key" class="form-input" readonly style="background:var(--bg)">
           </div>
           <div style="display:flex;gap:8px">
-            <button class="btn btn-ghost btn-sm" onclick="disconnect()">Desconectar</button>
-            <button class="btn btn-primary btn-sm" onclick="loadData();showToast('Datos recargados','success')">Recargar datos</button>
+            <button class="btn btn-primary btn-sm" onclick="loadData();renderCurrentView();showToast('Datos recargados','success')">Recargar datos</button>
             <button class="btn btn-danger btn-sm" onclick="logout()">Cerrar sesión</button>
           </div>
         </div>
@@ -560,14 +511,6 @@ function getConfig() {
     if (c && c.url && c.key) return c;
   } catch {}
   return { url: DEFAULT_URL, key: DEFAULT_KEY };
-}
-
-function saveConfig(url, key) {
-  localStorage.setItem(CFG_KEY, JSON.stringify({ url, key }));
-}
-
-function clearConfig() {
-  localStorage.removeItem(CFG_KEY);
 }
 
 // ============================================
@@ -1164,57 +1107,9 @@ document.addEventListener('keydown', e => {
 // ============================================
 // CONNECTION
 // ============================================
-async function handleConnect() {
-  const url = document.getElementById('cfg-url').value.trim();
-  const key = document.getElementById('cfg-key').value.trim();
-  const errEl = document.getElementById('setup-error');
-  const okEl = document.getElementById('setup-success');
-  errEl.style.display = 'none';
-  okEl.style.display = 'none';
-
-  if (!url || !key) { errEl.textContent = 'Introduce la URL y la anon key'; errEl.style.display = 'block'; return; }
-
-  const btn = document.getElementById('btn-connect');
-  btn.disabled = true;
-  btn.textContent = 'Conectando...';
-
-  try {
-    await connect(url, key);
-    saveConfig(url, key);
-    await loadData();
-    okEl.textContent = 'Conexión exitosa. Cargando app...';
-    okEl.style.display = 'block';
-    setTimeout(showApp, 600);
-  } catch (e) {
-    let msg = 'Error al conectar: ' + e.message;
-    if (e.message && e.message.includes('relation')) {
-      msg += '\n\n¿Has ejecutado el SQL de setup.sql en tu proyecto Supabase?';
-    }
-    errEl.textContent = msg;
-    errEl.style.display = 'block';
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Conectar';
-  }
-}
-
 function showApp() {
-  document.getElementById('setup-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
-  document.getElementById('bottom-nav').style.display = 'block';
   renderCurrentView();
-}
-
-function disconnect() {
-  clearConfig();
-  S.sb = null;
-  S.centros = [];
-  S.chicas = [];
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('bottom-nav').style.display = 'none';
-  document.getElementById('setup-screen').style.display = 'flex';
-  document.getElementById('cfg-url').value = '';
-  document.getElementById('cfg-key').value = '';
 }
 
 // ============================================
@@ -1269,19 +1164,16 @@ document.getElementById('login-user').addEventListener('keydown', e => {
 // INIT
 // ============================================
 async function init() {
+  showApp();
   const cfg = getConfig();
-  document.getElementById('cfg-url').value = cfg.url;
-  document.getElementById('cfg-key').value = cfg.key;
   try {
     await connect(cfg.url, cfg.key);
     await loadData();
-    showApp();
-    startInterviewChecks();
   } catch (e) {
-    document.getElementById('setup-error').textContent = 'No se pudo conectar con la base de datos: ' + (e.message || 'error');
-    document.getElementById('setup-error').style.display = 'block';
-    document.getElementById('setup-screen').style.display = 'flex';
+    showToast('No se pudo conectar a la base de datos. Prueba "Recargar datos" en Configuración.', 'error');
   }
+  renderCurrentView();
+  startInterviewChecks();
 }
 
 window.addEventListener('DOMContentLoaded', () => {
