@@ -155,16 +155,19 @@ tr:hover td{background:var(--primary-light)}
   .sidebar.open{transform:none}
   .main{margin-left:0}
   .bottom-nav{display:block}
-  .content{padding:16px;padding-bottom:80px}
+  .content{padding:16px;padding-bottom:120px}
   .stat-grid{grid-template-columns:1fr 1fr}
   .form-row{grid-template-columns:1fr}
   .header{padding:0 16px}
   .header-actions .btn span{display:none}
   .table-wrap{border-radius:var(--radius)}
   td,th{padding:10px 10px;font-size:.78rem}
-  .toast-container{bottom:80px;right:12px;left:12px}
+  .toast-container{bottom:100px;right:12px;left:12px}
   .toast{max-width:100%}
-  .mobile-menu-btn{display:flex!important}
+  .mobile-menu-btn{display:none!important}
+  #view-config .stat-grid{grid-template-columns:1fr}
+  .config-actions{flex-wrap:wrap}
+  .config-actions .btn{flex:1 1 auto}
 }
 @media(min-width:769px){.mobile-menu-btn{display:none!important}}
 
@@ -434,7 +437,7 @@ tr:hover td{background:var(--primary-light)}
             <label class="form-label">anon key</label>
             <input type="text" id="cfg-edit-key" class="form-input" readonly style="background:var(--bg)">
           </div>
-          <div style="display:flex;gap:8px">
+          <div class="config-actions" style="display:flex;gap:8px">
             <button class="btn btn-primary btn-sm" onclick="loadData();renderCurrentView();showToast('Datos recargados','success')">Recargar datos</button>
             <button class="btn btn-danger btn-sm" onclick="logout()">Cerrar sesión</button>
           </div>
@@ -651,9 +654,7 @@ function switchView(view) {
 
   // Header actions per view
   const ha = document.getElementById('header-actions');
-  if (view === 'centros') {
-    ha.innerHTML = '<button class="btn btn-primary btn-sm" onclick="openCentroModal()"><span>+</span> <span>Centro</span></button>';
-  } else if (view === 'chicas') {
+  if (view === 'chicas') {
     ha.innerHTML = '<button class="btn btn-primary btn-sm" onclick="openChicaModal()"><span>+</span> <span>Chica</span></button>';
   } else {
     ha.innerHTML = '';
@@ -1193,7 +1194,7 @@ if ('serviceWorker' in navigator) {
 // CALENDARIO DE ENTREVISTAS
 // ============================================
 let calMonth = new Date();
-let calSelected = null;
+let calSelected = toDateKey(new Date());
 let notifiedInterviews = {};
 
 function pad2(n) { return String(n).padStart(2, '0'); }
