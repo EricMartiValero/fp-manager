@@ -182,6 +182,16 @@ tr:hover td{background:var(--primary-light)}
 .info-card .row .label{font-weight:500;color:var(--text)}
 .info-card .card-actions{display:flex;gap:6px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
 
+#login-screen{position:fixed;inset:0;background:linear-gradient(135deg,#4F46E5 0%,#7C3AED 100%);display:flex;align-items:center;justify-content:center;z-index:500;padding:20px}
+.login-card{background:#fff;border-radius:20px;padding:40px 32px;max-width:400px;width:100%;box-shadow:var(--shadow-lg);text-align:center}
+.login-card .logo{font-size:2.6rem;margin-bottom:10px}
+.login-card h1{font-size:1.5rem;margin-bottom:4px}
+.login-card .subtitle{color:var(--text2);font-size:.85rem;margin-bottom:24px}
+.login-card .form-group{text-align:left}
+.login-card .btn{margin-top:8px}
+.logout-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:8px;margin-top:10px;border:none;border-radius:8px;background:rgba(239,68,68,.15);color:#FCA5A5;font-size:.8rem;font-weight:600;cursor:pointer;transition:background .2s}
+.logout-btn:hover{background:rgba(239,68,68,.3);color:#FECACA}
+
 .recent-list{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
 .recent-item{display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--border)}
 .recent-item:last-child{border-bottom:none}
@@ -194,6 +204,25 @@ tr:hover td{background:var(--primary-light)}
 </style>
 </head>
 <body>
+
+<!-- ========== LOGIN SCREEN ========== -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="logo">🎓</div>
+    <h1>FP Manager</h1>
+    <p class="subtitle">Acceso privado · Elektra</p>
+    <div class="form-group">
+      <label class="form-label">Usuario</label>
+      <input type="text" id="login-user" class="form-input" placeholder="Nombre de usuario" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Contraseña</label>
+      <input type="password" id="login-pass" class="form-input" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <p class="error-msg" id="login-error" style="display:none;text-align:center"></p>
+    <button class="btn btn-primary btn-full" onclick="doLogin()">Entrar</button>
+  </div>
+</div>
 
 <!-- ========== SETUP SCREEN ========== -->
 <div id="setup-screen">
@@ -257,7 +286,8 @@ tr:hover td{background:var(--primary-light)}
       </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="version">FP Manager v1.0</div>
+      <div class="version">FP Manager v1.1</div>
+      <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
     </div>
   </aside>
 
@@ -398,6 +428,7 @@ tr:hover td{background:var(--primary-light)}
           <div style="display:flex;gap:8px">
             <button class="btn btn-ghost btn-sm" onclick="disconnect()">Desconectar</button>
             <button class="btn btn-primary btn-sm" onclick="loadData();showToast('Datos recargados','success')">Recargar datos</button>
+            <button class="btn btn-danger btn-sm" onclick="logout()">Cerrar sesión</button>
           </div>
         </div>
       </div>
@@ -1058,7 +1089,7 @@ function closeSidebar() {
 // ============================================
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeModal();
-  if (e.key === '/' && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) {
+  if (e.key === '/' && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName) && document.getElementById('login-screen').style.display === 'none') {
     e.preventDefault();
     document.getElementById('global-search').focus();
   }
@@ -1121,9 +1152,48 @@ function disconnect() {
 }
 
 // ============================================
+// LOGIN
+// ============================================
+const AUTH_USER = 'Nury';
+const AUTH_PASS = 'Putada21';
+const SESSION_KEY = 'fp_manager_session';
+
+function isLoggedIn() {
+  return localStorage.getItem(SESSION_KEY) === '1';
+}
+
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  const err = document.getElementById('login-error');
+  if (u === AUTH_USER && p === AUTH_PASS) {
+    localStorage.setItem(SESSION_KEY, '1');
+    document.getElementById('login-screen').style.display = 'none';
+    init();
+  } else {
+    err.textContent = 'Usuario o contraseña incorrectos';
+    err.style.display = 'block';
+    document.getElementById('login-pass').value = '';
+    document.getElementById('login-pass').focus();
+  }
+}
+
+function logout() {
+  localStorage.removeItem(SESSION_KEY);
+  location.reload();
+}
+
+document.getElementById('login-pass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+document.getElementById('login-user').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+// ============================================
 // INIT
 // ============================================
-(async function init() {
+async function init() {
   const cfg = getConfig();
   if (cfg) {
     document.getElementById('cfg-url').value = cfg.url;
@@ -1136,7 +1206,14 @@ function disconnect() {
       clearConfig();
     }
   }
-})();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (isLoggedIn()) {
+    document.getElementById('login-screen').style.display = 'none';
+    init();
+  }
+});
 </script>
 </body>
 </html>
