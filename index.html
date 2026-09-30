@@ -164,31 +164,17 @@ tr:hover td{background:var(--primary-light)}
   .header-actions .btn span{display:none}
   .table-wrap{border-radius:var(--radius)}
   td,th{padding:10px 10px;font-size:.78rem}
-  /* Chicas mobile: tarjetas en vez de tabla */
-  #view-chicas .table-wrap{display:none}
+  /* Chicas móvil: rejilla de 2 columnas */
   #view-chicas .section-header{flex-direction:column;align-items:stretch}
   #view-chicas .section-header h2{font-size:1.05rem}
   #view-chicas .filters{display:flex;gap:8px}
   #view-chicas .filter-select{flex:1;min-height:42px;font-size:.85rem}
   #view-chicas .filters .btn{min-height:42px;flex-shrink:0}
-  .chicas-mobile-sort{display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:.8rem;color:var(--text2)}
-  .chicas-mobile-sort .filter-select{flex:1;min-height:40px}
-  .chicas-cards{display:grid;gap:12px}
-  .chica-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;border:1px solid var(--border)}
-  .chica-top{display:flex;gap:12px;align-items:center}
-  .chica-avatar{width:52px;height:52px;border-radius:14px;object-fit:cover;border:1.5px solid var(--border);background:var(--primary-light);flex-shrink:0;cursor:pointer}
-  .chica-avatar-fallback{width:52px;height:52px;border-radius:14px;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.3rem;flex-shrink:0}
-  .chica-name{font-weight:700;font-size:.95rem;line-height:1.2}
-  .chica-meta{font-size:.78rem;color:var(--text2);margin-top:2px}
-  .chica-badges{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
-  .chica-rows{margin-top:10px;display:grid;gap:6px;font-size:.82rem;color:var(--text2)}
-  .chica-row{display:flex;align-items:center;gap:8px}
-  .chica-contact{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
-  .chica-contact a{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;border-radius:10px;font-weight:600;font-size:.85rem;border:1.5px solid var(--border);color:var(--text);background:var(--bg)}
-  .chica-cv-btn{width:100%;min-height:44px;margin-top:8px;border-radius:10px;border:none;background:var(--primary-light);color:var(--primary);font-weight:700;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
-  .chica-notes{margin-top:8px;font-size:.78rem;color:var(--text2);background:var(--bg);border-radius:8px;padding:8px 10px}
-  .chica-actions{display:flex;gap:8px;margin-top:10px}
-  .chica-actions .btn{flex:1;min-height:44px}
+  .chicas-sort-row{margin-bottom:10px}
+  .chicas-sort-row .filter-select{flex:1;min-height:42px}
+  .chicas-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .detail-modal{max-width:100%}
+  .detail-cv-frame{height:55vh}
   .cv-modal{max-width:100%}
   .cv-modal-body iframe{height:60vh}
   .modal{max-width:100%}
@@ -263,6 +249,44 @@ tr:hover td{background:var(--primary-light)}
 .cv-upload-box{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:14px;text-align:center;transition:all .2s;background:var(--bg)}
 .cv-upload-box:hover{border-color:var(--primary);background:var(--primary-light)}
 .cv-preview-img{max-width:100%;max-height:180px;border-radius:8px;border:1.5px solid var(--border);display:block;margin:0 auto 10px;object-fit:contain;background:#fff}
+.ri-foto{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1.5px solid var(--border)}
+/* ---- Chicas: rejilla de fotos ---- */
+.chicas-sort-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:.82rem;color:var(--text2)}
+.chicas-sort-row .filter-select{min-height:40px}
+.chicas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.chica-tile{background:var(--card);border-radius:16px;box-shadow:var(--shadow);border:1px solid var(--border);padding:12px;cursor:pointer;text-align:center;transition:transform .15s,box-shadow .15s}
+.chica-tile:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.chica-tile:active{transform:scale(.98)}
+.chica-tile-photo{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;background:var(--primary-light);display:block}
+.chica-tile-fallback{width:100%;aspect-ratio:1;border-radius:12px;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:3rem}
+.chica-tile-name{font-weight:700;font-size:.9rem;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chica-tile-sub{margin-top:4px;display:flex;justify-content:center}
+/* ---- Ficha detalle de chica ---- */
+.detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:250;padding:16px}
+.detail-overlay.active{display:flex}
+.detail-modal{background:var(--card);border-radius:20px;width:100%;max-width:560px;max-height:92vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);animation:modalIn .2s ease;overflow:hidden}
+.detail-hero{background:linear-gradient(135deg,#4F46E5 0%,#7C3AED 100%);padding:22px 20px 18px;text-align:center;color:#fff;position:relative}
+.detail-hero .detail-close{position:absolute;top:10px;right:10px;width:34px;height:34px;border:none;border-radius:50%;background:rgba(255,255,255,.2);color:#fff;font-size:1rem;cursor:pointer}
+.detail-hero .detail-close:hover{background:rgba(255,255,255,.35)}
+.detail-photo{width:110px;height:110px;border-radius:50%;object-fit:cover;border:4px solid rgba(255,255,255,.85);background:#fff;display:block;margin:0 auto}
+.detail-photo-fallback{width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.25);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:2.6rem;margin:0 auto;border:4px solid rgba(255,255,255,.5)}
+.detail-name{font-size:1.2rem;font-weight:700;margin-top:10px}
+.detail-centro{font-size:.82rem;opacity:.9;margin-top:2px}
+.detail-hero .badge{margin-top:8px}
+.detail-body{padding:16px 20px 20px;overflow-y:auto}
+.detail-contact{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.detail-contact a{display:flex;align-items:center;justify-content:center;gap:6px;min-height:46px;border-radius:12px;font-weight:700;font-size:.88rem;border:1.5px solid var(--border);color:var(--text);background:var(--bg)}
+.detail-row{display:flex;gap:10px;align-items:flex-start;font-size:.86rem;color:var(--text2);padding:6px 0}
+.detail-row b{color:var(--text)}
+.detail-notes{background:var(--bg);border-radius:10px;padding:10px 12px;font-size:.83rem;color:var(--text2);margin-top:8px}
+.detail-cv-label{font-size:.82rem;font-weight:700;color:var(--text);margin:14px 0 8px;text-transform:uppercase;letter-spacing:.5px}
+.detail-cv-img{width:100%;border-radius:12px;border:1.5px solid var(--border);background:#fff;display:block}
+.detail-cv-frame{width:100%;height:50vh;border:1.5px solid var(--border);border-radius:12px;background:#fff}
+.detail-cv-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.detail-cv-actions .btn{flex:1;min-height:44px}
+.detail-actions{display:flex;gap:8px;margin-top:16px}
+.detail-actions .btn{flex:1;min-height:46px}
+.foto-preview-img{width:110px;height:110px;border-radius:50%;object-fit:cover;border:3px solid var(--primary-light);display:block;margin:0 auto 10px;background:#fff}
 .cv-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:250;padding:16px}
 .cv-overlay.active{display:flex}
 .cv-modal{background:var(--card);border-radius:var(--radius);width:100%;max-width:820px;max-height:92vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);animation:modalIn .2s ease;overflow:hidden}
@@ -272,8 +296,7 @@ tr:hover td{background:var(--primary-light)}
 .cv-modal-body img{max-width:100%;max-height:65vh;border-radius:8px;border:1.5px solid var(--border);background:#fff;object-fit:contain}
 .cv-modal-body iframe{width:100%;height:65vh;border:1.5px solid var(--border);border-radius:8px;background:#fff}
 .cv-modal-footer{padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;background:var(--card)}
-.chicas-cards{display:none}
-.chicas-mobile-sort{display:none}
+.chicas-cards,.chicas-mobile-sort{display:none}
 </style>
 </head>
 <body>
@@ -436,7 +459,7 @@ tr:hover td{background:var(--primary-light)}
             </button>
           </div>
         </div>
-        <div class="chicas-mobile-sort">
+        <div class="chicas-sort-row">
           <label for="sort-chicas-mobile">Ordenar:</label>
           <select class="filter-select" id="sort-chicas-mobile" onchange="sortChicasMobile(this.value)">
             <option value="nombre">Nombre A-Z</option>
@@ -445,27 +468,7 @@ tr:hover td{background:var(--primary-light)}
             <option value="fecha_entrevista">Entrevista</option>
           </select>
         </div>
-        <div class="table-wrap">
-          <div class="table-scroll">
-            <table id="table-chicas">
-              <thead>
-                <tr>
-                  <th onclick="sortChicas('nombre')">Nombre <span class="sort-arrow">↕</span></th>
-                  <th>Contacto</th>
-                  <th>Teléfono</th>
-                  <th onclick="sortChicas('centro_id')">Centro FP <span class="sort-arrow">↕</span></th>
-                  <th onclick="sortChicas('estado')">Estado <span class="sort-arrow">↕</span></th>
-                  <th onclick="sortChicas('fecha_entrevista')">Entrevista <span class="sort-arrow">↕</span></th>
-                  <th>CV</th>
-                  <th>Notas</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="tbody-chicas"></tbody>
-            </table>
-          </div>
-        </div>
-        <div class="chicas-cards" id="chicas-cards"></div>
+        <div class="chicas-grid" id="chicas-grid"></div>
       </div>
 
       <!-- CONFIG VIEW -->
@@ -543,15 +546,11 @@ tr:hover td{background:var(--primary-light)}
   </div>
 </div>
 
-<!-- ========== CV VIEWER (desplegable dentro de la app) ========== -->
-<div class="cv-overlay" id="cv-overlay" onclick="if(event.target===this)closeCvViewer()">
-  <div class="cv-modal">
-    <div class="cv-modal-header">
-      <h3 id="cv-title">CV</h3>
-      <button class="modal-close" onclick="closeCvViewer()">✕</button>
-    </div>
-    <div class="cv-modal-body" id="cv-body"></div>
-    <div class="cv-modal-footer" id="cv-footer"></div>
+<!-- ========== FICHA DETALLE CHICA (foto + contacto + CV) ========== -->
+<div class="detail-overlay" id="detail-overlay" onclick="if(event.target===this)closeChicaDetail()">
+  <div class="detail-modal">
+    <div class="detail-hero" id="detail-hero"></div>
+    <div class="detail-body" id="detail-body"></div>
   </div>
 </div>
 
@@ -766,7 +765,7 @@ function renderDashboard() {
   // Recent activity (last modified items)
   const recent = [];
   S.centros.slice(-5).reverse().forEach(c => recent.push({ type: 'centro', icon: '🏫', name: c.nombre, sub: c.estado_contacto, data: c }));
-  S.chicas.slice(-5).reverse().forEach(g => recent.push({ type: 'chica', icon: '👩', name: g.nombre, sub: g.estado, data: g }));
+  S.chicas.slice(-5).reverse().forEach(g => recent.push({ type: 'chica', icon: '👩', name: g.nombre, sub: g.estado, data: g, foto: fotoUrlOf(g) }));
   recent.sort((a, b) => new Date(b.data.created_at || 0) - new Date(a.data.created_at || 0));
 
   const ra = document.getElementById('recent-activity');
@@ -774,8 +773,8 @@ function renderDashboard() {
     ra.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>No hay actividad aún. ¡Empieza añadiendo centros o chicas!</p></div>';
   } else {
     ra.innerHTML = '<div class="recent-list">' + recent.slice(0, 8).map(r => `
-      <div class="recent-item">
-        <div class="ri-icon ${r.type}">${r.icon}</div>
+      <div class="recent-item" ${r.type === 'chica' ? `onclick="openChicaDetail('${r.data.id}')" style="cursor:pointer"` : ''}>
+        ${r.foto ? `<img class="ri-foto" src="${esc(r.foto)}" loading="lazy" alt="">` : `<div class="ri-icon ${r.type}">${r.icon}</div>`}
         <div class="ri-text">
           <div class="ri-title">${esc(r.name)}</div>
           <div class="ri-sub">${r.type === 'centro' ? 'Centro FP' : 'Candidata'} · <span class="badge ${getEstadoBadgeClass(r.sub)}">${esc(r.sub)}</span></div>
@@ -896,73 +895,30 @@ function sortChicasMobile(col) {
 
 function renderChicas() {
   const data = getFilteredChicas();
-  const tbody = document.getElementById('tbody-chicas');
-  const cards = document.getElementById('chicas-cards');
+  const grid = document.getElementById('chicas-grid');
   const ms = document.getElementById('sort-chicas-mobile');
   if (ms && ms.value !== S.sortChicas.col) ms.value = S.sortChicas.col;
+  if (!grid) return;
   if (data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="icon">👩</div><p>No se encontraron chicas. ¡Añade la primera candidata!</p></div></td></tr>';
-    if (cards) cards.innerHTML = '<div class="empty-state"><div class="icon">👩</div><p>No se encontraron chicas. ¡Añade la primera candidata!</p></div>';
+    grid.innerHTML = '<div class="empty-state"><div class="icon">👩</div><p>No se encontraron chicas. ¡Añade la primera!</p></div>';
     return;
   }
-  tbody.innerHTML = data.map(g => `
-    <tr>
-      <td><span class="cell-main">${esc(g.nombre)}</span></td>
-      <td>${g.email ? `<a class="cell-link" href="mailto:${esc(g.email)}">${esc(g.email)}</a>` : '<span class="cell-sub">-</span>'}</td>
-      <td>${g.telefono ? `<a class="cell-link" href="tel:${esc(g.telefono)}">${esc(g.telefono)}</a>` : '<span class="cell-sub">-</span>'}</td>
-      <td><span class="cell-sub">${esc(centroName(g.centro_id))}</span></td>
-      <td><span class="badge ${getEstadoBadgeClass(g.estado)}">${esc(g.estado)}</span></td>
-      <td><span class="cell-sub">${g.fecha_entrevista ? formatDateTime(g.fecha_entrevista) : '-'}</span></td>
-      <td>${cvCellHtml(g)}</td>
-      <td><span class="cell-sub" title="${esc(g.notas || '')}">${esc((g.notas || '-').substring(0, 40))}${(g.notas || '').length > 40 ? '...' : ''}</span></td>
-      <td>
-        <div class="cell-actions">
-          <button class="btn-icon edit" onclick="openChicaModal('${g.id}')" title="Editar">✏️</button>
-          <button class="btn-icon delete" onclick="confirmDeleteChica('${g.id}')" title="Eliminar">🗑️</button>
-        </div>
-      </td>
-    </tr>
-  `).join('');
-  if (cards) cards.innerHTML = data.map(chicaCardHtml).join('');
+  grid.innerHTML = data.map(chicaTileHtml).join('');
 }
 
-function chicaAvatarHtml(g, u) {
-  const safeId = String(g.id);
-  if (u && !isPdfUrl(u)) return `<img class="chica-avatar" src="${esc(u)}" onclick="openCvViewer('${safeId}')" loading="lazy" alt="">`;
+function fotoUrlOf(g) { return (g && (g.foto_url || g.foto)) || ''; }
+
+function chicaTileHtml(g) {
+  const f = fotoUrlOf(g);
   const initial = esc((g.nombre || '?').trim().charAt(0).toUpperCase());
-  if (u && isPdfUrl(u)) return `<div class="chica-avatar-fallback" onclick="openCvViewer('${safeId}')" style="cursor:pointer" title="Ver CV">📄</div>`;
-  return `<div class="chica-avatar-fallback">${initial}</div>`;
-}
-
-function chicaCardHtml(g) {
-  const u = cvUrlOf(g);
-  const tel = (g.telefono || '').trim();
-  const mail = (g.email || '').trim();
+  const photo = f
+    ? `<img class="chica-tile-photo" src="${esc(f)}" loading="lazy" alt="">`
+    : `<div class="chica-tile-fallback">${initial}</div>`;
   return `
-  <div class="chica-card">
-    <div class="chica-top">
-      ${chicaAvatarHtml(g, u)}
-      <div style="flex:1;min-width:0">
-        <div class="chica-name">${esc(g.nombre)}</div>
-        <div class="chica-meta">${esc(centroName(g.centro_id))}</div>
-        <div class="chica-badges"><span class="badge ${getEstadoBadgeClass(g.estado)}">${esc(g.estado || '-')}</span></div>
-      </div>
-    </div>
-    <div class="chica-rows">
-      <div class="chica-row">📅 ${g.fecha_entrevista ? esc(formatDateTime(g.fecha_entrevista)) : 'Sin entrevista'}</div>
-      ${tel ? `<div class="chica-row">📞 ${esc(tel)}</div>` : ''}
-      ${mail ? `<div class="chica-row">✉️ ${esc(mail)}</div>` : ''}
-    </div>
-    ${tel || mail ? `<div class="chica-contact">
-      ${tel ? `<a href="tel:${esc(tel)}">📞 Llamar</a>` : ''}
-      ${mail ? `<a href="mailto:${esc(mail)}">✉️ Email</a>` : ''}
-    </div>` : ''}
-    ${u ? `<button class="chica-cv-btn" onclick="openCvViewer('${g.id}')">📄 Ver CV ▾</button>` : `<div class="chica-row" style="margin-top:8px">📎 Sin CV — <a style="color:var(--primary);font-weight:600;cursor:pointer" onclick="openChicaModal('${g.id}')">subir</a></div>`}
-    ${g.notas ? `<div class="chica-notes">${esc(g.notas.length > 120 ? g.notas.substring(0, 120) + '...' : g.notas)}</div>` : ''}
-    <div class="chica-actions">
-      <button class="btn btn-ghost btn-sm" onclick="openChicaModal('${g.id}')">✏️ Editar</button>
-      <button class="btn btn-ghost btn-sm" onclick="confirmDeleteChica('${g.id}')" style="color:var(--error)">🗑️</button>
-    </div>
+  <div class="chica-tile" onclick="openChicaDetail('${g.id}')">
+    ${photo}
+    <div class="chica-tile-name">${esc(g.nombre || '-')}</div>
+    <div class="chica-tile-sub"><span class="badge ${getEstadoBadgeClass(g.estado)}">${esc(g.estado || '-')}</span></div>
   </div>`;
 }
 
@@ -974,38 +930,128 @@ function isPdfUrl(u) {
   return /\.pdf($|\?|#)/i.test(u);
 }
 
-function cvCellHtml(g) {
-  const u = cvUrlOf(g);
-  if (!u) return '<span class="cell-sub">-</span>';
-  if (isPdfUrl(u)) return `<button class="cv-badge" onclick="openCvViewer('${g.id}')" title="Ver CV desplegado">📄 Ver CV ▾</button>`;
-  return `<img class="cv-thumb" src="${esc(u)}" onclick="openCvViewer('${g.id}')" title="Ver CV desplegado" loading="lazy" onerror="this.outerHTML='<span class=\'cell-sub\'>📎 <a style=&quot;cursor:pointer&quot; onclick=&quot;openCvViewer(\\'${g.id}\\')&quot;>Ver CV</a></span>'">`;
+/* Los CV pesados en base64 se convierten a blob:URL para no duplicar
+   strings gigantes en el DOM (eso colgaba el móvil al abrir el CV). */
+function dataUrlToBlobUrl(dataUrl) {
+  const comma = dataUrl.indexOf(',');
+  const head = dataUrl.slice(0, comma);
+  const mime = (head.match(/data:(.*?);/) || [])[1] || 'application/octet-stream';
+  const bin = atob(dataUrl.slice(comma + 1));
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return URL.createObjectURL(new Blob([arr], { type: mime }));
 }
 
-function openCvViewer(id) {
+function revokeDetailBlobs() {
+  (window._detailBlobUrls || []).forEach(u => { try { URL.revokeObjectURL(u); } catch (e) {} });
+  window._detailBlobUrls = [];
+}
+
+function openChicaDetail(id) {
   const g = S.chicas.find(x => String(x.id) === String(id));
   if (!g) return;
+  revokeDetailBlobs();
+  const f = fotoUrlOf(g);
   const u = cvUrlOf(g);
-  if (!u) { showToast('Esta chica no tiene CV', 'info'); return; }
-  document.getElementById('cv-title').textContent = 'CV · ' + (g.nombre || '');
-  const body = document.getElementById('cv-body');
-  const foot = document.getElementById('cv-footer');
-  const safe = esc(u);
-  if (isPdfUrl(u)) {
-    body.innerHTML = `<iframe src="${safe}" title="CV de ${esc(g.nombre || '')}" allow="fullscreen"></iframe>
-      <p style="font-size:.78rem;color:var(--text2);text-align:center">Si no se ve el PDF, usa Descargar o Abrir.<br><span style="font-size:.72rem">Consejo: en Supabase el bucket "cvs" debe ser público.</span></p>`;
+  const initial = esc((g.nombre || '?').trim().charAt(0).toUpperCase());
+
+  document.getElementById('detail-hero').innerHTML = `
+    <button class="detail-close" onclick="closeChicaDetail()">✕</button>
+    ${f ? `<img class="detail-photo" src="${esc(f)}" alt="">` : `<div class="detail-photo-fallback">${initial}</div>`}
+    <div class="detail-name">${esc(g.nombre || '-')}</div>
+    <div class="detail-centro">${esc(centroName(g.centro_id))}</div>
+    <div><span class="badge ${getEstadoBadgeClass(g.estado)}">${esc(g.estado || '-')}</span></div>`;
+
+  const tel = (g.telefono || '').trim();
+  const mail = (g.email || '').trim();
+  let cvHtml;
+  if (u) {
+    window._detailCvOrig = u;
+    window._detailCvName = g.nombre || 'chica';
+    if (isPdfUrl(u)) {
+      if (u.startsWith('data:') && u.length > 3500000) {
+        cvHtml = `<div class="detail-cv-label">CV</div>
+          <p style="font-size:.85rem;color:var(--text2)">📄 El PDF es muy pesado para previsualizarlo aquí.</p>
+          <div class="detail-cv-actions"><button class="btn btn-primary btn-sm" onclick="downloadDetailCv()">⬇ Descargar CV</button></div>`;
+      } else {
+        let src = u;
+        if (u.startsWith('data:')) { try { src = dataUrlToBlobUrl(u); window._detailBlobUrls.push(src); } catch (e) { src = u; } }
+        cvHtml = `<div class="detail-cv-label">CV</div>
+          <iframe class="detail-cv-frame" src="${esc(src)}" title="CV"></iframe>
+          <div class="detail-cv-actions">
+            <button class="btn btn-ghost btn-sm" onclick="downloadDetailCv()">⬇ Descargar</button>
+            <button class="btn btn-ghost btn-sm" onclick="openDetailCvTab()">↗ Abrir</button>
+          </div>`;
+      }
+    } else {
+      cvHtml = `<div class="detail-cv-label">CV</div>
+        <img class="detail-cv-img" src="${esc(u)}" alt="CV" loading="lazy">
+        <div class="detail-cv-actions">
+          <button class="btn btn-ghost btn-sm" onclick="downloadDetailCv()">⬇ Descargar</button>
+          <button class="btn btn-ghost btn-sm" onclick="openDetailCvTab()">↗ Abrir</button>
+        </div>`;
+    }
   } else {
-    body.innerHTML = `<img src="${safe}" alt="CV de ${esc(g.nombre || '')}" onerror="this.outerHTML='<p style=color:var(--error)>No se pudo cargar la imagen. <a href=&quot;${safe}&quot; target=&quot;_blank&quot;>Abrir en pestaña</a></p>'">`;
+    window._detailCvOrig = null;
+    cvHtml = `<div class="detail-cv-label">CV</div>
+      <p style="font-size:.85rem;color:var(--text2)">Sin CV — <a style="color:var(--primary);font-weight:700;cursor:pointer" onclick="closeChicaDetail();openChicaModal('${g.id}')">subir uno</a></p>`;
   }
-  foot.innerHTML = `
-    <a class="btn btn-ghost btn-sm" href="${safe}" download="CV-${esc(g.nombre || 'chica')}">⬇ Descargar</a>
-    <a class="btn btn-ghost btn-sm" href="${safe}" target="_blank" rel="noopener">↗ Abrir en pestaña</a>
-    <button class="btn btn-primary btn-sm" onclick="closeCvViewer()">Cerrar</button>`;
-  document.getElementById('cv-overlay').classList.add('active');
+
+  document.getElementById('detail-body').innerHTML = `
+    ${(tel || mail) ? `<div class="detail-contact">${tel ? `<a href="tel:${esc(tel)}">📞 Llamar</a>` : ''}${mail ? `<a href="mailto:${esc(mail)}">✉️ Email</a>` : ''}</div>` : ''}
+    ${tel ? `<div class="detail-row">📞 <span>${esc(tel)}</span></div>` : ''}
+    ${mail ? `<div class="detail-row">✉️ <span>${esc(mail)}</span></div>` : ''}
+    <div class="detail-row">🏫 <span><b>Centro:</b> ${esc(centroName(g.centro_id))}</span></div>
+    <div class="detail-row">📅 <span><b>Entrevista:</b> ${g.fecha_entrevista ? esc(formatDateTime(g.fecha_entrevista)) : 'sin programar'}</span></div>
+    ${g.notas ? `<div class="detail-notes">${esc(g.notas)}</div>` : ''}
+    ${cvHtml}
+    <div class="detail-actions">
+      <button class="btn btn-ghost btn-sm" onclick="closeChicaDetail();openChicaModal('${g.id}')">✏️ Editar</button>
+      <button class="btn btn-primary btn-sm" onclick="closeChicaDetail()">Cerrar</button>
+    </div>`;
+  document.getElementById('detail-overlay').classList.add('active');
 }
 
-function closeCvViewer() {
-  document.getElementById('cv-overlay').classList.remove('active');
-  document.getElementById('cv-body').innerHTML = '';
+function closeChicaDetail() {
+  const o = document.getElementById('detail-overlay');
+  if (o) o.classList.remove('active');
+  const b = document.getElementById('detail-body');
+  if (b) b.innerHTML = '';
+  window._detailCvOrig = null;
+  revokeDetailBlobs();
+}
+
+async function downloadDetailCv() {
+  const u = window._detailCvOrig;
+  if (!u) return;
+  const safeName = 'CV-' + String(window._detailCvName || 'chica').replace(/[^\wáéíóúñü-]+/gi, '_') + (isPdfUrl(u) ? '.pdf' : '.jpg');
+  try {
+    showToast('Descargando CV...', 'info');
+    const res = await fetch(u);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = safeName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => { try { URL.revokeObjectURL(url); } catch (e) {} }, 10000);
+  } catch (e) { window.open(u, '_blank'); }
+}
+
+function openDetailCvTab() {
+  const u = window._detailCvOrig;
+  if (!u) return;
+  if (u.startsWith('data:')) {
+    try {
+      const url = dataUrlToBlobUrl(u);
+      window._detailBlobUrls.push(url);
+      window.open(url, '_blank');
+      return;
+    } catch (e) {}
+  }
+  window.open(u, '_blank');
 }
 
 // ============================================
@@ -1127,8 +1173,23 @@ function openChicaModal(id, prefillDate) {
   ).join('');
   const fechaVal = (g?.fecha_entrevista ? new Date(g.fecha_entrevista).toISOString().slice(0, 16) : (prefillDate || ''));
   const cvVal = cvUrlOf(g || {});
+  const fotoVal = fotoUrlOf(g || {});
+  window._cvOrig = (cvVal && cvVal.startsWith('data:')) ? cvVal : null;
+  window._fotoOrig = (fotoVal && fotoVal.startsWith('data:')) ? fotoVal : null;
 
   document.getElementById('modal-body').innerHTML = `
+    <div class="form-group" style="text-align:center">
+      <label class="form-label" style="text-align:left">😊 Foto de cara (para reconocerla)</label>
+      <div class="cv-upload-box">
+        <div id="foto-preview">${fotoVal && !fotoVal.startsWith('data:') ? `<img class="foto-preview-img" src="${esc(fotoVal)}">` : (fotoVal ? '<p style="font-size:.82rem;color:var(--text2)">✔ Foto guardada (se conserva al guardar)</p>' : '<p style="font-size:.82rem;color:var(--text2)">Sin foto</p>')}</div>
+        <input type="file" id="f-foto" accept="image/*" style="margin-top:10px" onchange="previewFotoInput(this)">
+        <input type="hidden" id="f-foto-url" value="${(fotoVal && !fotoVal.startsWith('data:')) ? esc(fotoVal) : ''}">
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('f-foto').click()">📷 Subir foto</button>
+          ${(fotoVal || '') ? '<button type="button" class="btn btn-ghost btn-sm" onclick="removeFoto()">✕ Quitar</button>' : ''}
+        </div>
+      </div>
+    </div>
     <div class="form-group">
       <label class="form-label">Nombre *</label>
       <input type="text" id="f-nombre" class="form-input" value="${esc(g?.nombre || '')}" placeholder="Nombre de la candidata">
@@ -1165,9 +1226,9 @@ function openChicaModal(id, prefillDate) {
     <div class="form-group">
       <label class="form-label">📎 CV de la chica (imagen o PDF)</label>
       <div class="cv-upload-box">
-        <div id="cv-preview">${cvVal ? (isPdfUrl(cvVal) ? `<iframe src="${esc(cvVal)}" style="width:100%;height:220px;border:1.5px solid var(--border);border-radius:8px;background:#fff"></iframe><p style="font-size:.82rem;margin-top:6px">📄 CV actual · <a href="${esc(cvVal)}" target="_blank" rel="noopener">abrir</a></p>` : `<img class="cv-preview-img" src="${esc(cvVal)}">`) : '<p style="font-size:.82rem;color:var(--text2)">Ningún CV subido aún</p>'}</div>
+        <div id="cv-preview">${cvPreviewHtml(cvVal)}</div>
         <input type="file" id="f-cv" accept="image/*,.pdf" style="margin-top:10px" onchange="previewCvInput(this)">
-        <input type="hidden" id="f-cv-url" value="${esc(cvVal)}">
+        <input type="hidden" id="f-cv-url" value="${(cvVal && !cvVal.startsWith('data:')) ? esc(cvVal) : ''}">
         <div style="display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap">
           <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('f-cv').click()">📤 Subir imagen / PDF</button>
           ${cvVal ? '<button type="button" class="btn btn-ghost btn-sm" onclick="removeCv()">✕ Quitar CV</button>' : ''}
@@ -1181,6 +1242,7 @@ function openChicaModal(id, prefillDate) {
     </div>
   `;
   window._cvFile = null;
+  window._fotoFile = null;
   document.getElementById('modal-save').onclick = async () => {
     const nombre = document.getElementById('f-nombre').value.trim();
     if (!nombre) { showToast('El nombre es obligatorio', 'error'); return; }
@@ -1190,10 +1252,15 @@ function openChicaModal(id, prefillDate) {
     saveBtn.disabled = true;
     saveBtn.textContent = 'Guardando...';
     try {
-      let cvUrl = document.getElementById('f-cv-url').value.trim();
+      let cvUrl = document.getElementById('f-cv-url').value.trim() || window._cvOrig || '';
       if (window._cvFile) {
         saveBtn.textContent = 'Subiendo CV...';
         cvUrl = await uploadCvFile(window._cvFile);
+      }
+      let fotoUrl = document.getElementById('f-foto-url').value.trim() || window._fotoOrig || '';
+      if (window._fotoFile) {
+        saveBtn.textContent = 'Subiendo foto...';
+        fotoUrl = await uploadFotoFile(window._fotoFile);
       }
       const data = {
         nombre,
@@ -1202,12 +1269,16 @@ function openChicaModal(id, prefillDate) {
         centro_id: centroId,
         estado: document.getElementById('f-estado').value,
         fecha_entrevista: fechaVal ? new Date(fechaVal).toISOString() : null,
+        foto_url: fotoUrl || null,
         cv_url: cvUrl || null,
         notas: document.getElementById('f-notas').value.trim()
       };
       if (g) { await dbUpdateChica(g.id, data); showToast('Chica actualizada', 'success'); }
       else { await dbAddChica(data); showToast('Chica creada', 'success'); }
       window._cvFile = null;
+      window._fotoFile = null;
+      window._cvOrig = null;
+      window._fotoOrig = null;
       closeModal();
       renderCurrentView();
     } catch (e) { showToast('Error: ' + e.message, 'error'); }
@@ -1215,11 +1286,92 @@ function openChicaModal(id, prefillDate) {
   };
 }
 
+/* Preview ligero: los CV/fotos guardados en base64 NO se incrustan de nuevo
+   (duplicar strings de MBs en el DOM colgaba la app). */
+function cvPreviewHtml(cvVal) {
+  if (!cvVal) return '<p style="font-size:.82rem;color:var(--text2)">Ningún CV subido aún</p>';
+  if (cvVal.startsWith('data:')) {
+    const kb = Math.round(cvVal.length * 0.75 / 1024);
+    return `<p style="font-size:.85rem">📄 CV actual guardado (${kb} KB) · se conserva al guardar</p>`;
+  }
+  if (isPdfUrl(cvVal)) return `<iframe src="${esc(cvVal)}" style="width:100%;height:220px;border:1.5px solid var(--border);border-radius:8px;background:#fff"></iframe><p style="font-size:.82rem;margin-top:6px">📄 CV actual · <a href="${esc(cvVal)}" target="_blank" rel="noopener">abrir</a></p>`;
+  return `<img class="cv-preview-img" src="${esc(cvVal)}">`;
+}
+
+function previewFotoInput(input) {
+  const f = input.files && input.files[0];
+  if (!f) return;
+  if (!f.type.startsWith('image/')) { showToast('La foto debe ser una imagen', 'error'); input.value = ''; return; }
+  if (f.size > 8 * 1024 * 1024) { showToast('La foto supera 8MB', 'error'); input.value = ''; return; }
+  window._fotoFile = f;
+  window._fotoOrig = null;
+  document.getElementById('f-foto-url').value = '';
+  const prev = document.getElementById('foto-preview');
+  const objUrl = URL.createObjectURL(f);
+  prev.innerHTML = `<img class="foto-preview-img" src="${objUrl}"><p style="font-size:.78rem;color:var(--success)">✔ Foto lista para subir</p>`;
+}
+
+function removeFoto() {
+  window._fotoFile = null;
+  window._fotoOrig = null;
+  const fi = document.getElementById('f-foto');
+  if (fi) fi.value = '';
+  document.getElementById('f-foto-url').value = '';
+  document.getElementById('foto-preview').innerHTML = '<p style="font-size:.82rem;color:var(--text2)">Sin foto</p>';
+}
+
+function downscaleImage(file, maxDim, quality) {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      try {
+        let w = img.width, h = img.height;
+        const scale = Math.min(1, maxDim / Math.max(w, h));
+        w = Math.max(1, Math.round(w * scale));
+        h = Math.max(1, Math.round(h * scale));
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        c.toBlob(b => b ? res(b) : rej(new Error('No se pudo procesar la imagen')), 'image/jpeg', quality);
+      } catch (e) { URL.revokeObjectURL(url); rej(e); }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('Imagen no válida')); };
+    img.src = url;
+  });
+}
+
+function blobToDataUrl(blob) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = rej;
+    r.readAsDataURL(blob);
+  });
+}
+
+async function uploadFotoFile(file) {
+  const small = await downscaleImage(file, 800, 0.82);
+  try {
+    if (S.sb) {
+      const path = 'fotos/' + Date.now() + '_' + Math.random().toString(36).slice(2, 8) + '.jpg';
+      const { error } = await S.sb.storage.from('cvs').upload(path, small, { upsert: true, contentType: 'image/jpeg' });
+      if (!error) {
+        const { data } = S.sb.storage.from('cvs').getPublicUrl(path);
+        if (data && data.publicUrl) return data.publicUrl;
+      } else { console.warn('Storage cvs:', error.message); }
+    }
+  } catch (e) { console.warn('Storage fallback:', e); }
+  return await blobToDataUrl(small);
+}
+
 function previewCvInput(input) {
   const f = input.files && input.files[0];
   if (!f) return;
   if (f.size > 5 * 1024 * 1024) { showToast('El archivo supera 5MB', 'error'); input.value = ''; return; }
   window._cvFile = f;
+  window._cvOrig = null;
   const prev = document.getElementById('cv-preview');
   if (f.type.startsWith('image/')) {
     const r = new FileReader();
@@ -1241,6 +1393,7 @@ function previewCvInput(input) {
 
 function removeCv() {
   window._cvFile = null;
+  window._cvOrig = null;
   const fi = document.getElementById('f-cv');
   if (fi) fi.value = '';
   document.getElementById('f-cv-url').value = '';
@@ -1263,7 +1416,13 @@ async function uploadCvFile(file) {
       }
     }
   } catch (e) { console.warn('Storage fallback:', e); }
-  // 2) Fallback: base64 en la columna cv_url (funciona sin crear bucket)
+  // 2) Fallback: base64 en la columna cv_url (funciona sin crear bucket).
+  // Las imágenes se reducen antes para no guardar strings gigantes.
+  if (file.type.startsWith('image/')) {
+    const small = await downscaleImage(file, 1200, 0.85);
+    if (small.size > 1500000) throw new Error('No hay bucket "cvs" y la imagen sigue superando 1.5MB. Crea el bucket "cvs" público en Supabase.');
+    return await blobToDataUrl(small);
+  }
   if (file.size > 1500000) throw new Error('No hay bucket "cvs" y el archivo supera 1.5MB para guardar en base64. Crea el bucket "cvs" público en Supabase.');
   return await new Promise((res, rej) => {
     const r = new FileReader();
@@ -1349,7 +1508,7 @@ function closeSidebar() {
 // KEYBOARD SHORTCUTS
 // ============================================
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeCvViewer(); closeModal(); }
+  if (e.key === 'Escape') { closeChicaDetail(); closeModal(); }
   if (e.key === '/' && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName) && document.getElementById('login-screen').style.display === 'none') {
     e.preventDefault();
     document.getElementById('global-search').focus();

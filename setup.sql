@@ -25,6 +25,7 @@ CREATE TABLE chicas (
   centro_id UUID REFERENCES centros(id) ON DELETE SET NULL,
   estado VARCHAR(50) DEFAULT 'Pendiente',
   fecha_entrevista TIMESTAMPTZ,
+  foto_url TEXT,
   cv_url TEXT,
   notas VARCHAR(1000),
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -32,6 +33,7 @@ CREATE TABLE chicas (
 );
 
 -- Migración si la tabla ya existe (ejecutar en Supabase SQL Editor):
+-- ALTER TABLE chicas ADD COLUMN IF NOT EXISTS foto_url TEXT;
 -- ALTER TABLE chicas ADD COLUMN IF NOT EXISTS cv_url TEXT;
 
 -- Bucket público "cvs" para los CVs (imágenes / PDF):
