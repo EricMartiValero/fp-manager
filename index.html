@@ -233,6 +233,15 @@ tr:hover td{background:var(--primary-light)}
 .cv-upload-box{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:14px;text-align:center;transition:all .2s;background:var(--bg)}
 .cv-upload-box:hover{border-color:var(--primary);background:var(--primary-light)}
 .cv-preview-img{max-width:100%;max-height:180px;border-radius:8px;border:1.5px solid var(--border);display:block;margin:0 auto 10px;object-fit:contain;background:#fff}
+.cv-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:250;padding:16px}
+.cv-overlay.active{display:flex}
+.cv-modal{background:var(--card);border-radius:var(--radius);width:100%;max-width:820px;max-height:92vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);animation:modalIn .2s ease;overflow:hidden}
+.cv-modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
+.cv-modal-header h3{font-size:1rem}
+.cv-modal-body{padding:16px 20px;overflow-y:auto;flex:1;background:var(--bg);display:flex;flex-direction:column;align-items:center;gap:10px}
+.cv-modal-body img{max-width:100%;max-height:65vh;border-radius:8px;border:1.5px solid var(--border);background:#fff;object-fit:contain}
+.cv-modal-body iframe{width:100%;height:65vh;border:1.5px solid var(--border);border-radius:8px;background:#fff}
+.cv-modal-footer{padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;background:var(--card)}
 </style>
 </head>
 <body>
@@ -489,6 +498,18 @@ tr:hover td{background:var(--primary-light)}
       <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
       <button class="btn btn-primary" id="modal-save">Guardar</button>
     </div>
+  </div>
+</div>
+
+<!-- ========== CV VIEWER (desplegable dentro de la app) ========== -->
+<div class="cv-overlay" id="cv-overlay" onclick="if(event.target===this)closeCvViewer()">
+  <div class="cv-modal">
+    <div class="cv-modal-header">
+      <h3 id="cv-title">CV</h3>
+      <button class="modal-close" onclick="closeCvViewer()">✕</button>
+    </div>
+    <div class="cv-modal-body" id="cv-body"></div>
+    <div class="cv-modal-footer" id="cv-footer"></div>
   </div>
 </div>
 
@@ -852,13 +873,44 @@ function renderChicas() {
 
 function cvUrlOf(g) { return g.cv_url || g.cv || ''; }
 
-function isPdfUrl(u) { return /\.pdf($|\?)/i.test(u || '') || (u || '').startsWith('data:application/pdf'); }
+function isPdfUrl(u) {
+  if (!u) return false;
+  if (u.startsWith('data:application/pdf')) return true;
+  return /\.pdf($|\?|#)/i.test(u);
+}
 
 function cvCellHtml(g) {
   const u = cvUrlOf(g);
   if (!u) return '<span class="cell-sub">-</span>';
-  if (isPdfUrl(u)) return `<button class="cv-badge" onclick="window.open('${u.replace(/'/g, '%27')}','_blank')" title="Ver CV">📄 Ver CV</button>`;
-  return `<img class="cv-thumb" src="${u.replace(/"/g, '&quot;')}" onclick="window.open('${u.replace(/'/g, '%27')}','_blank')" title="Ver CV" loading="lazy" onerror="this.outerHTML='<span class=\\'cell-sub\\'>📎 CV</span>'">`;
+  if (isPdfUrl(u)) return `<button class="cv-badge" onclick="openCvViewer('${g.id}')" title="Ver CV desplegado">📄 Ver CV ▾</button>`;
+  return `<img class="cv-thumb" src="${esc(u)}" onclick="openCvViewer('${g.id}')" title="Ver CV desplegado" loading="lazy" onerror="this.outerHTML='<span class=\'cell-sub\'>📎 <a style=&quot;cursor:pointer&quot; onclick=&quot;openCvViewer(\\'${g.id}\\')&quot;>Ver CV</a></span>'">`;
+}
+
+function openCvViewer(id) {
+  const g = S.chicas.find(x => String(x.id) === String(id));
+  if (!g) return;
+  const u = cvUrlOf(g);
+  if (!u) { showToast('Esta chica no tiene CV', 'info'); return; }
+  document.getElementById('cv-title').textContent = 'CV · ' + (g.nombre || '');
+  const body = document.getElementById('cv-body');
+  const foot = document.getElementById('cv-footer');
+  const safe = esc(u);
+  if (isPdfUrl(u)) {
+    body.innerHTML = `<iframe src="${safe}" title="CV de ${esc(g.nombre || '')}" allow="fullscreen"></iframe>
+      <p style="font-size:.78rem;color:var(--text2);text-align:center">Si no se ve el PDF, usa Descargar o Abrir.<br><span style="font-size:.72rem">Consejo: en Supabase el bucket "cvs" debe ser público.</span></p>`;
+  } else {
+    body.innerHTML = `<img src="${safe}" alt="CV de ${esc(g.nombre || '')}" onerror="this.outerHTML='<p style=color:var(--error)>No se pudo cargar la imagen. <a href=&quot;${safe}&quot; target=&quot;_blank&quot;>Abrir en pestaña</a></p>'">`;
+  }
+  foot.innerHTML = `
+    <a class="btn btn-ghost btn-sm" href="${safe}" download="CV-${esc(g.nombre || 'chica')}">⬇ Descargar</a>
+    <a class="btn btn-ghost btn-sm" href="${safe}" target="_blank" rel="noopener">↗ Abrir en pestaña</a>
+    <button class="btn btn-primary btn-sm" onclick="closeCvViewer()">Cerrar</button>`;
+  document.getElementById('cv-overlay').classList.add('active');
+}
+
+function closeCvViewer() {
+  document.getElementById('cv-overlay').classList.remove('active');
+  document.getElementById('cv-body').innerHTML = '';
 }
 
 // ============================================
@@ -1018,9 +1070,9 @@ function openChicaModal(id, prefillDate) {
     <div class="form-group">
       <label class="form-label">📎 CV de la chica (imagen o PDF)</label>
       <div class="cv-upload-box">
-        <div id="cv-preview">${cvVal ? (isPdfUrl(cvVal) ? `<p style="font-size:.85rem">📄 <a href="${cvVal.replace(/"/g, '&quot;')}" target="_blank">Ver CV actual</a></p>` : `<img class="cv-preview-img" src="${cvVal.replace(/"/g, '&quot;')}">`) : '<p style="font-size:.82rem;color:var(--text2)">Ningún CV subido aún</p>'}</div>
+        <div id="cv-preview">${cvVal ? (isPdfUrl(cvVal) ? `<iframe src="${esc(cvVal)}" style="width:100%;height:220px;border:1.5px solid var(--border);border-radius:8px;background:#fff"></iframe><p style="font-size:.82rem;margin-top:6px">📄 CV actual · <a href="${esc(cvVal)}" target="_blank" rel="noopener">abrir</a></p>` : `<img class="cv-preview-img" src="${esc(cvVal)}">`) : '<p style="font-size:.82rem;color:var(--text2)">Ningún CV subido aún</p>'}</div>
         <input type="file" id="f-cv" accept="image/*,.pdf" style="margin-top:10px" onchange="previewCvInput(this)">
-        <input type="hidden" id="f-cv-url" value="${cvVal.replace(/"/g, '&quot;')}">
+        <input type="hidden" id="f-cv-url" value="${esc(cvVal)}">
         <div style="display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap">
           <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('f-cv').click()">📤 Subir imagen / PDF</button>
           ${cvVal ? '<button type="button" class="btn btn-ghost btn-sm" onclick="removeCv()">✕ Quitar CV</button>' : ''}
@@ -1081,9 +1133,10 @@ function previewCvInput(input) {
       prev.innerHTML = `<img class="cv-preview-img" src="${r.result}"><p style="font-size:.78rem;color:var(--success)">✔ ${esc(f.name)} lista para subir</p>`;
     };
     r.readAsDataURL(f);
-  } else if (f.type === 'application/pdf') {
+  } else if (f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')) {
     document.getElementById('f-cv-url').value = '';
-    prev.innerHTML = `<p style="font-size:.85rem">📄 ${esc(f.name)} listo para subir</p>`;
+    const objUrl = URL.createObjectURL(f);
+    prev.innerHTML = `<iframe src="${objUrl}" style="width:100%;height:220px;border:1.5px solid var(--border);border-radius:8px;background:#fff"></iframe><p style="font-size:.78rem;color:var(--success)">✔ ${esc(f.name)} listo para subir</p>`;
   } else {
     showToast('Solo imágenes o PDF', 'error');
     input.value = '';
@@ -1201,7 +1254,7 @@ function closeSidebar() {
 // KEYBOARD SHORTCUTS
 // ============================================
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeModal();
+  if (e.key === 'Escape') { closeCvViewer(); closeModal(); }
   if (e.key === '/' && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName) && document.getElementById('login-screen').style.display === 'none') {
     e.preventDefault();
     document.getElementById('global-search').focus();
