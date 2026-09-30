@@ -25,10 +25,22 @@ CREATE TABLE chicas (
   centro_id UUID REFERENCES centros(id) ON DELETE SET NULL,
   estado VARCHAR(50) DEFAULT 'Pendiente',
   fecha_entrevista TIMESTAMPTZ,
+  cv_url TEXT,
   notas VARCHAR(1000),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migración si la tabla ya existe (ejecutar en Supabase SQL Editor):
+-- ALTER TABLE chicas ADD COLUMN IF NOT EXISTS cv_url TEXT;
+
+-- Bucket público "cvs" para los CVs (imágenes / PDF):
+-- INSERT INTO storage.buckets (id, name, public) VALUES ('cvs','cvs', true)
+-- ON CONFLICT (id) DO NOTHING;
+-- CREATE POLICY "public read cvs" ON storage.objects FOR SELECT USING (bucket_id = 'cvs');
+-- CREATE POLICY "allow upload cvs" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'cvs');
+-- CREATE POLICY "allow update cvs" ON storage.objects FOR UPDATE USING (bucket_id = 'cvs');
+-- CREATE POLICY "allow delete cvs" ON storage.objects FOR DELETE USING (bucket_id = 'cvs');
 
 ALTER TABLE centros ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chicas ENABLE ROW LEVEL SECURITY;

@@ -226,6 +226,13 @@ tr:hover td{background:var(--primary-light)}
 .recent-item .ri-text{flex:1}
 .recent-item .ri-text .ri-title{font-size:.88rem;font-weight:600}
 .recent-item .ri-text .ri-sub{font-size:.78rem;color:var(--text2)}
+.cv-thumb{width:40px;height:40px;border-radius:8px;object-fit:cover;border:1.5px solid var(--border);cursor:pointer;transition:transform .15s}
+.cv-thumb:hover{transform:scale(1.15)}
+.cv-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:.75rem;font-weight:600;background:var(--primary-light);color:var(--primary);cursor:pointer;white-space:nowrap;border:none}
+.cv-badge:hover{background:var(--primary-100)}
+.cv-upload-box{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:14px;text-align:center;transition:all .2s;background:var(--bg)}
+.cv-upload-box:hover{border-color:var(--primary);background:var(--primary-light)}
+.cv-preview-img{max-width:100%;max-height:180px;border-radius:8px;border:1.5px solid var(--border);display:block;margin:0 auto 10px;object-fit:contain;background:#fff}
 </style>
 </head>
 <body>
@@ -399,6 +406,7 @@ tr:hover td{background:var(--primary-light)}
                   <th onclick="sortChicas('centro_id')">Centro FP <span class="sort-arrow">↕</span></th>
                   <th onclick="sortChicas('estado')">Estado <span class="sort-arrow">↕</span></th>
                   <th onclick="sortChicas('fecha_entrevista')">Entrevista <span class="sort-arrow">↕</span></th>
+                  <th>CV</th>
                   <th>Notas</th>
                   <th>Acciones</th>
                 </tr>
@@ -819,7 +827,7 @@ function renderChicas() {
   const data = getFilteredChicas();
   const tbody = document.getElementById('tbody-chicas');
   if (data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="icon">👩</div><p>No se encontraron chicas. ¡Añade la primera candidata!</p></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="icon">👩</div><p>No se encontraron chicas. ¡Añade la primera candidata!</p></div></td></tr>';
     return;
   }
   tbody.innerHTML = data.map(g => `
@@ -830,6 +838,7 @@ function renderChicas() {
       <td><span class="cell-sub">${esc(centroName(g.centro_id))}</span></td>
       <td><span class="badge ${getEstadoBadgeClass(g.estado)}">${esc(g.estado)}</span></td>
       <td><span class="cell-sub">${g.fecha_entrevista ? formatDateTime(g.fecha_entrevista) : '-'}</span></td>
+      <td>${cvCellHtml(g)}</td>
       <td><span class="cell-sub" title="${esc(g.notas || '')}">${esc((g.notas || '-').substring(0, 40))}${(g.notas || '').length > 40 ? '...' : ''}</span></td>
       <td>
         <div class="cell-actions">
@@ -839,6 +848,17 @@ function renderChicas() {
       </td>
     </tr>
   `).join('');
+}
+
+function cvUrlOf(g) { return g.cv_url || g.cv || ''; }
+
+function isPdfUrl(u) { return /\.pdf($|\?)/i.test(u || '') || (u || '').startsWith('data:application/pdf'); }
+
+function cvCellHtml(g) {
+  const u = cvUrlOf(g);
+  if (!u) return '<span class="cell-sub">-</span>';
+  if (isPdfUrl(u)) return `<button class="cv-badge" onclick="window.open('${u.replace(/'/g, '%27')}','_blank')" title="Ver CV">📄 Ver CV</button>`;
+  return `<img class="cv-thumb" src="${u.replace(/"/g, '&quot;')}" onclick="window.open('${u.replace(/'/g, '%27')}','_blank')" title="Ver CV" loading="lazy" onerror="this.outerHTML='<span class=\\'cell-sub\\'>📎 CV</span>'">`;
 }
 
 // ============================================
@@ -959,6 +979,7 @@ function openChicaModal(id, prefillDate) {
     `<option value="${e}" ${g?.estado === e ? 'selected' : ''}>${e}</option>`
   ).join('');
   const fechaVal = (g?.fecha_entrevista ? new Date(g.fecha_entrevista).toISOString().slice(0, 16) : (prefillDate || ''));
+  const cvVal = cvUrlOf(g || {});
 
   document.getElementById('modal-body').innerHTML = `
     <div class="form-group">
@@ -995,31 +1016,113 @@ function openChicaModal(id, prefillDate) {
       <input type="datetime-local" id="f-fecha_entrevista" class="form-input" value="${fechaVal}">
     </div>
     <div class="form-group">
+      <label class="form-label">📎 CV de la chica (imagen o PDF)</label>
+      <div class="cv-upload-box">
+        <div id="cv-preview">${cvVal ? (isPdfUrl(cvVal) ? `<p style="font-size:.85rem">📄 <a href="${cvVal.replace(/"/g, '&quot;')}" target="_blank">Ver CV actual</a></p>` : `<img class="cv-preview-img" src="${cvVal.replace(/"/g, '&quot;')}">`) : '<p style="font-size:.82rem;color:var(--text2)">Ningún CV subido aún</p>'}</div>
+        <input type="file" id="f-cv" accept="image/*,.pdf" style="margin-top:10px" onchange="previewCvInput(this)">
+        <input type="hidden" id="f-cv-url" value="${cvVal.replace(/"/g, '&quot;')}">
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('f-cv').click()">📤 Subir imagen / PDF</button>
+          ${cvVal ? '<button type="button" class="btn btn-ghost btn-sm" onclick="removeCv()">✕ Quitar CV</button>' : ''}
+        </div>
+        <p style="font-size:.72rem;color:var(--text3);margin-top:8px">JPG, PNG, WEBP o PDF · máx 5MB · se guarda en Supabase Storage (bucket "cvs")</p>
+      </div>
+    </div>
+    <div class="form-group">
       <label class="form-label">Notas</label>
       <textarea id="f-notas" class="form-input" placeholder="Notas sobre la candidata...">${esc(g?.notas || '')}</textarea>
     </div>
   `;
+  window._cvFile = null;
   document.getElementById('modal-save').onclick = async () => {
     const nombre = document.getElementById('f-nombre').value.trim();
     if (!nombre) { showToast('El nombre es obligatorio', 'error'); return; }
     const centroId = document.getElementById('f-centro_id').value || null;
     const fechaVal = document.getElementById('f-fecha_entrevista').value;
-    const data = {
-      nombre,
-      email: document.getElementById('f-email').value.trim(),
-      telefono: document.getElementById('f-telefono').value.trim(),
-      centro_id: centroId,
-      estado: document.getElementById('f-estado').value,
-      fecha_entrevista: fechaVal ? new Date(fechaVal).toISOString() : null,
-      notas: document.getElementById('f-notas').value.trim()
-    };
+    const saveBtn = document.getElementById('modal-save');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Guardando...';
     try {
+      let cvUrl = document.getElementById('f-cv-url').value.trim();
+      if (window._cvFile) {
+        saveBtn.textContent = 'Subiendo CV...';
+        cvUrl = await uploadCvFile(window._cvFile);
+      }
+      const data = {
+        nombre,
+        email: document.getElementById('f-email').value.trim(),
+        telefono: document.getElementById('f-telefono').value.trim(),
+        centro_id: centroId,
+        estado: document.getElementById('f-estado').value,
+        fecha_entrevista: fechaVal ? new Date(fechaVal).toISOString() : null,
+        cv_url: cvUrl || null,
+        notas: document.getElementById('f-notas').value.trim()
+      };
       if (g) { await dbUpdateChica(g.id, data); showToast('Chica actualizada', 'success'); }
       else { await dbAddChica(data); showToast('Chica creada', 'success'); }
+      window._cvFile = null;
       closeModal();
       renderCurrentView();
     } catch (e) { showToast('Error: ' + e.message, 'error'); }
+    finally { saveBtn.disabled = false; saveBtn.textContent = 'Guardar'; }
   };
+}
+
+function previewCvInput(input) {
+  const f = input.files && input.files[0];
+  if (!f) return;
+  if (f.size > 5 * 1024 * 1024) { showToast('El archivo supera 5MB', 'error'); input.value = ''; return; }
+  window._cvFile = f;
+  const prev = document.getElementById('cv-preview');
+  if (f.type.startsWith('image/')) {
+    const r = new FileReader();
+    r.onload = () => {
+      document.getElementById('f-cv-url').value = '';
+      prev.innerHTML = `<img class="cv-preview-img" src="${r.result}"><p style="font-size:.78rem;color:var(--success)">✔ ${esc(f.name)} lista para subir</p>`;
+    };
+    r.readAsDataURL(f);
+  } else if (f.type === 'application/pdf') {
+    document.getElementById('f-cv-url').value = '';
+    prev.innerHTML = `<p style="font-size:.85rem">📄 ${esc(f.name)} listo para subir</p>`;
+  } else {
+    showToast('Solo imágenes o PDF', 'error');
+    input.value = '';
+    window._cvFile = null;
+  }
+}
+
+function removeCv() {
+  window._cvFile = null;
+  const fi = document.getElementById('f-cv');
+  if (fi) fi.value = '';
+  document.getElementById('f-cv-url').value = '';
+  document.getElementById('cv-preview').innerHTML = '<p style="font-size:.82rem;color:var(--text2)">Ningún CV subido aún</p>';
+}
+
+async function uploadCvFile(file) {
+  // 1) Intento: Supabase Storage bucket "cvs" (público)
+  try {
+    if (S.sb) {
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().slice(0, 5);
+      const path = Date.now() + '_' + Math.random().toString(36).slice(2, 8) + '.' + ext;
+      const { error } = await S.sb.storage.from('cvs').upload(path, file, { upsert: true, contentType: file.type });
+      if (!error) {
+        const { data } = S.sb.storage.from('cvs').getPublicUrl(path);
+        if (data && data.publicUrl) return data.publicUrl;
+      } else {
+        // Si falta el bucket, avisamos pero seguimos con fallback base64
+        console.warn('Storage cvs:', error.message);
+      }
+    }
+  } catch (e) { console.warn('Storage fallback:', e); }
+  // 2) Fallback: base64 en la columna cv_url (funciona sin crear bucket)
+  if (file.size > 1500000) throw new Error('No hay bucket "cvs" y el archivo supera 1.5MB para guardar en base64. Crea el bucket "cvs" público en Supabase.');
+  return await new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
 }
 
 // ============================================
