@@ -13,8 +13,8 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script>if (window.pdfjsLib) { pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; }</script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script>if (window.pdfjsLib) { pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js'; }</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -76,7 +76,8 @@ input,select,textarea{font-family:inherit;font-size:inherit}
 .search-box input:focus{outline:none;border-color:var(--primary);background:var(--card)}
 .search-box svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3)}
 .header-actions{display:flex;gap:8px;margin-left:auto}
-.content{flex:1;overflow-y:auto;padding:24px}
+.content{flex:1;overflow-y:auto;padding:24px;position:relative}
+#ptr-indicator{position:absolute;top:10px;left:50%;width:200px;margin-left:-100px;padding:10px 14px;border-radius:20px;background:var(--sidebar);color:#fff;font-size:.8rem;font-weight:600;text-align:center;z-index:60;box-shadow:var(--shadow-lg);transform:translateY(-80px);transition:transform .2s;pointer-events:none}
 
 .view{display:none}
 .view.active{display:block}
@@ -966,28 +967,40 @@ function withPdfParams(u) {
   return u + (u.includes('#') ? '&' : '#') + 'toolbar=0&navpanes=0&scrollbar=0';
 }
 
-/* Lector PDF propio: dibuja cada página en canvas, sin toolbars ni menús. */
+/* Lector PDF propio: dibuja cada página en canvas, sin toolbars ni menús.
+   Si algo falla muestra el motivo (antes se quedaba en blanco). */
 async function renderPdfClean(container, src) {
   container.innerHTML = '<p class="pdf-loading">Cargando CV...</p>';
+  const fail = (msg) => {
+    container.innerHTML = `<p class="pdf-loading">No se pudo previsualizar el PDF${msg ? ': ' + esc(String(msg)) : ''}.<br>Usa Descargar o Abrir.</p>`;
+  };
   try {
-    if (!window.pdfjsLib) throw new Error('PDF.js no disponible');
+    if (!window.pdfjsLib) throw new Error('sin conexión a la librería PDF');
     const doc = await window.pdfjsLib.getDocument({ url: src, withCredentials: false }).promise;
+    const total = doc.numPages || 0;
+    if (!total) throw new Error('PDF vacío o dañado');
     container.innerHTML = '';
-    const maxPages = Math.min(doc.numPages, 10);
+    const maxPages = Math.min(total, 10);
     for (let p = 1; p <= maxPages; p++) {
-      const page = await doc.getPage(p);
-      const viewport = page.getViewport({ scale: 1.5 });
-      const canvas = document.createElement('canvas');
-      canvas.className = 'pdf-page';
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
-      container.appendChild(canvas);
-      await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+      try {
+        const page = await doc.getPage(p);
+        const viewport = page.getViewport({ scale: 1.4 });
+        const canvas = document.createElement('canvas');
+        canvas.className = 'pdf-page';
+        canvas.width = Math.floor(viewport.width);
+        canvas.height = Math.floor(viewport.height);
+        container.appendChild(canvas);
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+        try { page.cleanup(); } catch (e) {}
+      } catch (e) {
+        container.insertAdjacentHTML('beforeend', `<p class="pdf-note">No se pudo dibujar la página ${p}.</p>`);
+      }
     }
-    if (doc.numPages > maxPages) container.insertAdjacentHTML('beforeend', `<p class="pdf-note">El CV tiene ${doc.numPages} páginas (se muestran 10). Descárgalo para verlo entero.</p>`);
+    if (total > maxPages) container.insertAdjacentHTML('beforeend', `<p class="pdf-note">El CV tiene ${total} páginas (se muestran 10). Descárgalo para verlo entero.</p>`);
     try { doc.destroy(); } catch (e) {}
+    if (!container.querySelector('canvas')) fail('formato no compatible');
   } catch (e) {
-    container.innerHTML = `<iframe class="detail-cv-frame" src="${esc(withPdfParams(src))}" title="CV"></iframe>`;
+    fail(e && e.message);
   }
 }
 
@@ -1001,6 +1014,57 @@ async function reloadAppData() {
   } catch (e) { showToast('Error al recargar: ' + e.message, 'error'); }
   finally { if (btn) btn.classList.remove('spin'); }
 }
+
+/* Pull-to-refresh en móvil: la app no usa scroll del body (todo va dentro
+   de #content), así que el gesto nativo del navegador nunca salta.
+   Esto lo implementa a mano: deslizar hacia abajo desde arriba recarga. */
+(function initPullToRefresh() {
+  const el = document.getElementById('content');
+  if (!el) return;
+  const TH = 70;
+  let startY = 0, dist = 0, pulling = false, refreshing = false;
+  const getInd = () => {
+    let ind = document.getElementById('ptr-indicator');
+    if (!ind) {
+      ind = document.createElement('div');
+      ind.id = 'ptr-indicator';
+      el.prepend(ind);
+    }
+    return ind;
+  };
+  el.addEventListener('touchstart', e => {
+    if (refreshing || el.scrollTop > 0 || !e.touches || !e.touches[0]) return;
+    startY = e.touches[0].clientY;
+    dist = 0;
+    pulling = true;
+  }, { passive: true });
+  el.addEventListener('touchmove', e => {
+    if (!pulling || refreshing || !e.touches || !e.touches[0]) return;
+    dist = e.touches[0].clientY - startY;
+    if (dist > 0 && el.scrollTop <= 0) {
+      const ind = getInd();
+      ind.textContent = dist > TH ? '⟳ Suelta para recargar' : '⟳ Desliza para recargar';
+      ind.style.transform = 'translateY(' + Math.min(dist, 130) + 'px)';
+    } else if (dist <= 0) {
+      pulling = false;
+      const ind = document.getElementById('ptr-indicator');
+      if (ind) ind.style.transform = '';
+    }
+  }, { passive: true });
+  const end = async () => {
+    if (!pulling) return;
+    pulling = false;
+    const ind = document.getElementById('ptr-indicator');
+    if (ind) ind.style.transform = '';
+    if (dist > TH && el.scrollTop <= 0 && !refreshing) {
+      refreshing = true;
+      try { await reloadAppData(); } finally { refreshing = false; }
+    }
+    dist = 0;
+  };
+  el.addEventListener('touchend', end);
+  el.addEventListener('touchcancel', () => { pulling = false; dist = 0; const ind = document.getElementById('ptr-indicator'); if (ind) ind.style.transform = ''; });
+})();
 
 function openChicaDetail(id) {
   const g = S.chicas.find(x => String(x.id) === String(id));
